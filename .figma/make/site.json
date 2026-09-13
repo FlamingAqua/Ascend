@@ -1,0 +1,10 @@
+{
+  "description": "An AI-powered platform designed for Computer Science students to streamline study planning, track skills, and enhance career readiness through personalized guidance.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
