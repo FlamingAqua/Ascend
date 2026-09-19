@@ -150,14 +150,15 @@ function buildPrompt(context: AscendMentorContext, userMessage: string): string 
 function buildFallbackReply(context: AscendMentorContext, question: string): string {
   const profile = context.profile;
   const name = profile.name || "Learner";
+  const language = profile.preferredLanguage || "Java";
   const q = question.trim().toLowerCase();
 
   if (q.includes("today") || q.includes("study today") || q.includes("plan")) {
-    return `Hi ${name}, here is your personalized study plan for today.\n\nFocus on Java fundamentals and one DSA pattern first. Spend ${Math.min(profile.dailyStudyHours ?? 2, 2)} hours in a deep work block: 45 minutes on Java OOP or collections, 45 minutes on DSA problem practice, and 30 minutes on revision.\n\nSuggested task: solve one medium-level Java + DSA problem and write a short explanation of the approach.\n\nStudy schedule: Morning — Java/OOP review, Midday — DSA problem, Evening — revise mistakes and update your task list.\n\nNext question: Do you want me to create a full week plan from your current roadmap?`;
+    return `Hi ${name}, here is your personalized study plan for today.\n\nFocus on ${language} fundamentals and one DSA pattern first. Spend ${Math.min(profile.dailyStudyHours ?? 2, 2)} hours in a deep work block: 45 minutes on ${language} syntax or collections, 45 minutes on DSA problem practice, and 30 minutes on revision.\n\nSuggested task: solve one medium-level ${language} + DSA problem and write a short explanation of the approach.\n\nStudy schedule: Morning — ${language} review, Midday — DSA problem, Evening — revise mistakes and update your task list.\n\nNext question: Do you want me to create a full week plan from your current roadmap?`;
   }
 
   if (q.includes("java") || q.includes("python") || q.includes("language")) {
-    return `For ${name}, Java is the right language for your DSA and placement track. Java gives strong typing, a mature collection framework, and better alignment with backend interview patterns.\n\nUse Java for your problem solving. You can learn Python later if you need scripting or AI work.\n\nSuggested task: solve one arrays or hash map problem in Java and write the complexity analysis.\n\nSchedule: 30 minutes Java collections review, 60 minutes DSA problem practice, 30 minutes notes and mistakes review.`;
+    return `For ${name}, ${language} is your selected language for the DSA and placement track. Keep it consistent while you build fluency with syntax, collections, and common patterns.\n\nSuggested task: solve one arrays or hash map problem in ${language} and write the complexity analysis.\n\nSchedule: 30 minutes ${language} review, 60 minutes DSA problem practice, 30 minutes notes and mistakes review.`;
   }
 
   if (q.includes("dsa") || q.includes("graph") || q.includes("tree") || q.includes("problem")) {
@@ -165,11 +166,11 @@ function buildFallbackReply(context: AscendMentorContext, question: string): str
   }
 
   if (q.includes("roadmap") || q.includes("faang") || q.includes("career") || q.includes("hire") || q.includes("placement")) {
-    return "Your roadmap should combine Java, DSA, fundamentals, project work, and interview strategy. Build a strong base in Java OOP, collections, strings, arrays, trees, graphs, SQL, and REST APIs.\n\nA realistic plan is to spend 2 hours a day on Java + DSA, keep one project moving, and revise every Sunday.\n\nSuggested task: define one project milestone this week and connect it to a job-ready backend or DSA project.\n\nSchedule: Monday to Friday practice DSA, weekend review + project work.";
+    return `Your roadmap should combine ${language}, DSA, fundamentals, project work, and interview strategy. Build a strong base in ${language} syntax, collections, strings, arrays, trees, graphs, SQL, and REST APIs.\n\nA realistic plan is to spend 2 hours a day on ${language} + DSA, keep one project moving, and revise every Sunday.\n\nSuggested task: define one project milestone this week and connect it to a job-ready ${language} project.\n\nSchedule: Monday to Friday practice DSA, weekend review + project work.`;
   }
 
   if (q.includes("project") || q.includes("portfolio") || q.includes("github")) {
-    return "A strong project should demonstrate backend skills and Java depth. Choose one project that solves a real problem and shows API design, database structure, and clean code.\n\nSuggested task: pick a project that uses Java, CRUD operations, and a frontend or API interface. Write one GitHub README explaining the architecture.\n\nSchedule: 60 minutes on backend structure, 45 minutes on UI or API flow, 30 minutes on data modeling.";
+    return `A strong project should demonstrate backend skills and ${language} depth. Choose one project that solves a real problem and shows API design, database structure, and clean code.\n\nSuggested task: pick a project that uses ${language}, CRUD operations, and a frontend or API interface. Write one GitHub README explaining the architecture.\n\nSchedule: 60 minutes on backend structure, 45 minutes on UI or API flow, 30 minutes on data modeling.`;
   }
 
   if (q.includes("revision") || q.includes("revise") || q.includes("memory")) {

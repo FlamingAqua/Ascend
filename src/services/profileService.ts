@@ -1,6 +1,7 @@
-import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, setDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
 import type { UserProfile, UserRole } from "../types";
 import { db } from "./firebase";
+import { normalizePreferredLanguage } from "./planningService";
 
 export async function createUserProfile(uid: string, profile: Pick<UserProfile, "name" | "email">): Promise<void> {
   if (!db) return;
@@ -42,17 +43,30 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
   const snap = await getDoc(docRef);
   if (!snap.exists()) return null;
 
-  return { ...(snap.data() as UserProfile), uid: snap.id };
+  const data = snap.data() as UserProfile;
+  const preferredLanguage = normalizePreferredLanguage(data.preferredLanguage);
+  const { preferredLanguage: _storedLanguage, ...profileData } = data;
+  return { ...profileData, uid: snap.id, ...(preferredLanguage ? { preferredLanguage } : {}) };
 }
 
 export async function updateUserProfile(uid: string, updates: Partial<UserProfile>): Promise<void> {
   if (!db) return;
 
+  const sanitizedUpdates = { ...updates };
+  if ("preferredLanguage" in sanitizedUpdates) {
+    const preferredLanguage = normalizePreferredLanguage(sanitizedUpdates.preferredLanguage);
+    if (!preferredLanguage) {
+      throw new Error("Unsupported programming language preference.");
+    }
+    sanitizedUpdates.preferredLanguage = preferredLanguage;
+  }
+
   const docRef = doc(db, "users", uid);
-  await updateDoc(docRef, {
-    ...updates,
+  await setDoc(docRef, {
+    uid,
+    ...sanitizedUpdates,
     updatedAt: serverTimestamp(),
-  });
+  }, { merge: true });
 }
 
 export async function getAllUsers(): Promise<UserProfile[]> {

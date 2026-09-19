@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PageLayout, PageHeader, Badge, Button } from "../ui";
+import { useAuth } from "../../services/AuthContext";
+import { generateTasks, getPlanningContext } from "../../services/planningService";
 
 type Priority = "high" | "medium" | "low";
 type TaskStatus = "todo" | "done";
@@ -14,27 +16,6 @@ interface Task {
   tags: string[];
 }
 
-const initialTasks: Task[] = [
-  { id: 1, title: "Install IntelliJ IDEA + JDK 21 and run first Java program", subject: "Java", priority: "high", due: "Today", status: "todo", tags: ["Setup", "Day 1"] },
-  { id: 2, title: "Watch Telusko Java OOP: Classes, Objects, Constructors (Ep 10–15)", subject: "Java", priority: "high", due: "Today", status: "todo", tags: ["Video", "OOP"] },
-  { id: 3, title: "Code 5 OOP programs: BankAccount, Student, Shape, Animal, Calculator", subject: "Java", priority: "high", due: "Today", status: "todo", tags: ["Coding", "OOP"] },
-  { id: 4, title: "LeetCode #217 Contains Duplicate — solve in Java", subject: "DSA", priority: "high", due: "Today", status: "todo", tags: ["LeetCode", "Arrays"] },
-  { id: 5, title: "LeetCode #242 Valid Anagram — solve in Java", subject: "DSA", priority: "high", due: "Today", status: "todo", tags: ["LeetCode", "Arrays"] },
-  { id: 6, title: "LeetCode #1 Two Sum — solve in Java", subject: "DSA", priority: "high", due: "Today", status: "todo", tags: ["LeetCode", "Arrays"] },
-  { id: 7, title: "Read Striver A2Z Sheet — Arrays section overview", subject: "DSA", priority: "high", due: "Today", status: "todo", tags: ["DSA", "Planning"] },
-  { id: 8, title: "Learn Big-O notation — CS Dojo video (25 min)", subject: "DSA", priority: "medium", due: "Today", status: "todo", tags: ["Theory", "Complexity"] },
-  { id: 9, title: "Set up GitHub profile + create repo: java-dsa-practice", subject: "Git", priority: "medium", due: "This week", status: "todo", tags: ["Git", "Setup"] },
-  { id: 10, title: "Register for LeetCode and join Weekly Contest tracking", subject: "DSA", priority: "medium", due: "This week", status: "todo", tags: ["LeetCode", "Contest"] },
-  { id: 11, title: "LeetCode #49 Group Anagrams — Java HashMap grouping", subject: "DSA", priority: "high", due: "Sep 13", status: "todo", tags: ["LeetCode", "Medium"] },
-  { id: 12, title: "LeetCode #238 Product Except Self — prefix/suffix arrays", subject: "DSA", priority: "high", due: "Sep 13", status: "todo", tags: ["LeetCode", "Medium"] },
-  { id: 13, title: "Java — Inheritance: extends, super keyword, method overriding (code 3 examples)", subject: "Java", priority: "high", due: "Sep 13", status: "todo", tags: ["Java", "OOP"] },
-  { id: 14, title: "SQLZoo Tutorial 1 & 2 — practice 10 SELECT queries", subject: "SQL", priority: "medium", due: "Sep 14", status: "todo", tags: ["SQL", "Practice"] },
-  { id: 15, title: "Watch Kunal Kushwaha — Java Collections Framework (1h)", subject: "Java", priority: "medium", due: "Sep 15", status: "todo", tags: ["Video", "Collections"] },
-  { id: 16, title: "Java OOP Assignment — submit to college", subject: "College", priority: "high", due: "This week", status: "todo", tags: ["Assignment", "Deadline"] },
-  { id: 17, title: "LeetCode Weekly Contest #412 — attempt at least 2 problems", subject: "DSA", priority: "medium", due: "Sep 15", status: "todo", tags: ["Contest", "LeetCode"] },
-  { id: 18, title: "Mock Interview Prep — write BankAccount class from memory in 10 min", subject: "Java", priority: "high", due: "Sep 20", status: "todo", tags: ["Interview", "OOP"] },
-];
-
 const priorityLabel: Record<Priority, { variant: "danger" | "warning" | "default"; label: string }> = {
   high: { variant: "danger", label: "High" },
   medium: { variant: "warning", label: "Medium" },
@@ -42,11 +23,20 @@ const priorityLabel: Record<Priority, { variant: "danger" | "warning" | "default
 };
 
 export default function Tasks() {
-  const [tasks, setTasks] = useState(initialTasks);
+  const { profile } = useAuth();
+  const language = getPlanningContext(profile).preferredLanguage;
+  const [tasks, setTasks] = useState(() => generateTasks(getPlanningContext(profile)));
   const [filter, setFilter] = useState<"all" | "todo" | "done">("all");
   const [subject, setSubject] = useState("All");
 
-  const subjects = ["All", ...Array.from(new Set(initialTasks.map((t) => t.subject)))];
+  useEffect(() => {
+    setTasks((current) => {
+      const completed = new Map(current.filter((task) => task.status === "done").map((task) => [task.id, task.status]));
+      return generateTasks(getPlanningContext(profile)).map((task) => completed.has(task.id) ? { ...task, status: "done" as const } : task);
+    });
+  }, [language, profile?.academicYear, profile?.semester, profile?.targetYear]);
+
+  const subjects = ["All", ...Array.from(new Set(tasks.map((task) => task.subject)))];
 
   const visible = tasks
     .filter((t) => filter === "all" || t.status === filter)
@@ -66,7 +56,7 @@ export default function Tasks() {
     <PageLayout>
       <PageHeader
         title="Tasks"
-        subtitle={`${done} / ${tasks.length} complete · Java + DSA focused`}
+        subtitle={`${done} / ${tasks.length} complete · ${language} + DSA focused`}
         action={
           <Button size="sm">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

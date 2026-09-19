@@ -1,31 +1,30 @@
 import type { Screen } from "../../App";
 import { useAuth } from "../../services/AuthContext";
 import { PageLayout, PageHeader, Card, StatCard, ProgressBar, Badge, Button } from "../ui";
-
-const upcomingDeadlines = [
-  { name: "Java OOP Assignment", due: "This week", priority: "warning" as const },
-  { name: "LeetCode Weekly Contest #412", due: "Sep 15", priority: "info" as const },
-  { name: "DSA Mock Interview #1", due: "Sep 20", priority: "danger" as const },
-  { name: "Striver's A2Z Sheet – Arrays complete", due: "Sep 30", priority: "warning" as const },
-];
-
-const skills = [
-  { name: "Java", progress: 0, color: "bg-orange-500" },
-  { name: "DSA", progress: 0, color: "bg-indigo-500" },
-  { name: "SQL", progress: 0, color: "bg-blue-500" },
-  { name: "System Design", progress: 0, color: "bg-teal-500" },
-  { name: "Spring Boot", progress: 0, color: "bg-emerald-500" },
-];
+import { generateUpcomingPlan, getLanguagePlan, getPlanningContext } from "../../services/planningService";
 
 export default function Dashboard({ onNavigate }: { onNavigate: (s: Screen) => void }) {
   const { profile } = useAuth();
   const displayName = profile?.name || profile?.email || "Ascend Learner";
+  const context = getPlanningContext(profile);
+  const plan = getLanguagePlan(context.preferredLanguage);
+  const upcomingPlan = generateUpcomingPlan(context);
+  const language = context.preferredLanguage;
+  const academicYear = context.academicYear;
+  const targetYear = context.targetYear;
+  const skills = [
+    { name: language, progress: 0, color: plan.skills[0]?.color || "bg-orange-500" },
+    { name: "DSA", progress: 0, color: "bg-indigo-500" },
+    { name: "SQL", progress: 0, color: "bg-blue-500" },
+    { name: "System Design", progress: 0, color: "bg-teal-500" },
+    { name: "Projects", progress: 0, color: "bg-emerald-500" },
+  ];
 
   return (
     <PageLayout>
       <PageHeader
         title={`Let's get to work, ${displayName.split(" ")[0] || "Learner"} 🔥`}
-        subtitle="Saturday, Sep 12 · CSE Year 1 · Target: FAANG / ₹1Cr+ by 2030"
+        subtitle={`Your current plan · Year ${academicYear} · Target: FAANG / top SWE roles by ${targetYear}`}
         action={
           <Button onClick={() => onNavigate("today")} size="sm">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -43,7 +42,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: Screen) => v
           <div>
             <p className="text-xs font-medium opacity-70 uppercase tracking-wide mb-1">Mission 2030</p>
             <p className="font-display font-semibold text-lg">Highest-Paying SWE Role · FAANG / Top Startup</p>
-            <p className="text-sm opacity-80 mt-1">Java + DSA mastery → Projects → Internships → Offers. 4 years. No shortcuts, no excuses.</p>
+            <p className="text-sm opacity-80 mt-1">{language} + DSA mastery → Projects → Internships → Offers. Your plan adapts to your target year.</p>
           </div>
           <div className="flex-shrink-0 text-right">
             <p className="font-mono text-2xl font-semibold">1,461</p>
@@ -109,8 +108,8 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: Screen) => v
               </div>
               <div className="flex-1">
                 <p className="text-xs font-medium text-[var(--primary)] uppercase tracking-wide mb-1">Next Best Action</p>
-                <p className="font-display font-semibold text-[var(--foreground)]">Start: Java – OOP Fundamentals (Classes, Objects, Methods)</p>
-                <p className="text-sm text-[var(--muted-foreground)] mt-1">Java is your primary weapon. Master OOP first — every DSA structure you build will use it. Watch Telusko Java full course, then write 5 small programs today.</p>
+                <p className="font-display font-semibold text-[var(--foreground)]">Start: {language} – {plan.foundations[0]}</p>
+                <p className="text-sm text-[var(--muted-foreground)] mt-1">Build {language} fluency alongside arrays and hashing. Start with {plan.collectionTerm}, then solve three problems and record the pattern you used.</p>
                 <div className="flex gap-2 mt-3">
                   <Button size="sm" onClick={() => onNavigate("dsa")}>Start DSA</Button>
                   <Button size="sm" variant="secondary" onClick={() => onNavigate("skills")}>View Skills</Button>
@@ -120,14 +119,14 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: Screen) => v
             </div>
           </Card>
 
-          {/* Java + DSA status */}
+          {/* Preferred language + DSA status */}
           <div className="grid grid-cols-2 gap-4">
             <Card>
               <div className="flex items-center justify-between mb-3">
-                <p className="font-display font-semibold text-[var(--foreground)]">Java</p>
+                <p className="font-display font-semibold text-[var(--foreground)]">{language}</p>
                 <Badge variant="info">Active</Badge>
               </div>
-              <p className="text-sm text-[var(--muted-foreground)] mb-2">Current: OOP Basics</p>
+                <p className="text-sm text-[var(--muted-foreground)] mb-2">Current: Syntax + problem-solving basics</p>
               <ProgressBar value={0} height="h-2" />
               <p className="text-xs text-[var(--muted-foreground)] mt-1.5">0 / 200+ hours logged</p>
             </Card>
@@ -204,7 +203,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: Screen) => v
             </div>
             <div className="space-y-2.5">
               {[
-                { label: "Y1 · Java + DSA Foundation", pct: 0, status: "active" },
+                { label: `Y${academicYear} · ${language} + DSA Foundation`, pct: 0, status: "active" },
                 { label: "Y2 · Intermediate + Projects", pct: 0, status: "upcoming" },
                 { label: "Y3 · Advanced + Internship", pct: 0, status: "upcoming" },
                 { label: "Y4 · Placement Ready", pct: 0, status: "upcoming" },
@@ -224,7 +223,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: Screen) => v
           <Card>
             <p className="font-display font-semibold text-[var(--foreground)] mb-3">Upcoming</p>
             <div className="space-y-2.5">
-              {upcomingDeadlines.map((d) => (
+              {upcomingPlan.map((d) => (
                 <div key={d.name} className="flex items-center gap-3">
                   <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
                     d.priority === "danger" ? "bg-red-500" :
@@ -248,8 +247,8 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: Screen) => v
                 { k: "Target companies", v: "Google · Meta · Amazon" },
                 { k: "Target role", v: "SWE / Backend Engineer" },
                 { k: "Target salary", v: "₹50–100L+ CTC" },
-                { k: "Target year", v: "2030 placements" },
-                { k: "Must-have", v: "DSA + Java + Projects" },
+                { k: "Target year", v: `${targetYear} placements` },
+                { k: "Must-have", v: `DSA + ${language} + Projects` },
               ].map((item) => (
                 <div key={item.k} className="flex justify-between gap-2">
                   <span className="text-[var(--muted-foreground)] flex-shrink-0">{item.k}</span>

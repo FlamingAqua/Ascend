@@ -1,46 +1,15 @@
 import { useState } from "react";
 import { PageLayout, PageHeader, Card, ProgressBar, Badge, Button } from "../ui";
-
-const topics = [
-  { name: "Arrays & Hashing", problems: 30, done: 0, mastery: 0, accuracy: 0, status: "active", tag: "Start here" },
-  { name: "Two Pointers", problems: 20, done: 0, mastery: 0, accuracy: 0, status: "upcoming", tag: "" },
-  { name: "Sliding Window", problems: 18, done: 0, mastery: 0, accuracy: 0, status: "upcoming", tag: "" },
-  { name: "Stack", problems: 22, done: 0, mastery: 0, accuracy: 0, status: "upcoming", tag: "" },
-  { name: "Binary Search", problems: 25, done: 0, mastery: 0, accuracy: 0, status: "upcoming", tag: "" },
-  { name: "Linked List", problems: 24, done: 0, mastery: 0, accuracy: 0, status: "upcoming", tag: "" },
-  { name: "Trees / BFS-DFS", problems: 20, done: 0, mastery: 0, accuracy: 0, status: "upcoming", tag: "" },
-  { name: "Tries", problems: 10, done: 0, mastery: 0, accuracy: 0, status: "upcoming", tag: "" },
-  { name: "Heap / Priority Queue", problems: 18, done: 0, mastery: 0, accuracy: 0, status: "upcoming", tag: "" },
-  { name: "Backtracking", problems: 15, done: 0, mastery: 0, accuracy: 0, status: "upcoming", tag: "" },
-  { name: "Graphs", problems: 30, done: 0, mastery: 0, accuracy: 0, status: "upcoming", tag: "Y2 goal" },
-  { name: "Dynamic Programming", problems: 40, done: 0, mastery: 0, accuracy: 0, status: "upcoming", tag: "Y2 goal" },
-  { name: "Greedy", problems: 15, done: 0, mastery: 0, accuracy: 0, status: "upcoming", tag: "" },
-  { name: "Segment Trees", problems: 12, done: 0, mastery: 0, accuracy: 0, status: "upcoming", tag: "Advanced" },
-  { name: "Math & Number Theory", problems: 20, done: 0, mastery: 0, accuracy: 0, status: "upcoming", tag: "Advanced" },
-];
-
-const arraysProblems = [
-  { id: 217, title: "Contains Duplicate", difficulty: "Easy", note: "HashSet solution in Java" },
-  { id: 242, title: "Valid Anagram", difficulty: "Easy", note: "HashMap char frequency" },
-  { id: 1, title: "Two Sum", difficulty: "Easy", note: "HashMap – O(n)" },
-  { id: 49, title: "Group Anagrams", difficulty: "Medium", note: "Sort key + HashMap grouping" },
-  { id: 347, title: "Top K Frequent Elements", difficulty: "Medium", note: "Bucket sort or PriorityQueue" },
-  { id: 238, title: "Product of Array Except Self", difficulty: "Medium", note: "Prefix + suffix product arrays" },
-  { id: 271, title: "Encode and Decode Strings", difficulty: "Medium", note: "Length-prefix encoding" },
-  { id: 128, title: "Longest Consecutive Sequence", difficulty: "Medium", note: "HashSet O(n)" },
-  { id: 36, title: "Valid Sudoku", difficulty: "Medium", note: "HashSet per row/col/box" },
-  { id: 53, title: "Maximum Subarray", difficulty: "Medium", note: "Kadane's algorithm" },
-];
-
-const resources = [
-  { name: "Striver's A2Z DSA Sheet", type: "Sheet", desc: "The gold standard. Follow this in order." },
-  { name: "NeetCode 150 – Java solutions", type: "Video", desc: "Best YouTube explanations. Java code available." },
-  { name: "Kunal Kushwaha DSA playlist", type: "Video", desc: "Indian educator, Java-first, beginner-friendly." },
-  { name: "Abdul Bari Algorithms", type: "Video", desc: "Deep theory on every algorithm type." },
-  { name: "LeetCode (sorted by topic + difficulty)", type: "Practice", desc: "Always code in Java. Read top Java solutions." },
-];
+import { useAuth } from "../../services/AuthContext";
+import { DSA_TOPICS, getLanguagePlan } from "../../services/planningService";
 
 export default function DSA() {
+    const { profile } = useAuth();
+    const plan = getLanguagePlan(profile?.preferredLanguage);
+    const language = plan.language;
+    const topics = DSA_TOPICS.map((topic, index) => ({ ...topic, done: 0, mastery: 0, accuracy: 0, status: index === 0 ? "active" : "upcoming" as const }));
+    const arraysProblems = plan.practice;
+    const resources = plan.resources;
   const [selectedTopic, setSelectedTopic] = useState("Arrays & Hashing");
   const current = topics.find((t) => t.name === selectedTopic) || topics[0];
   const totalProblems = topics.reduce((a, t) => a + t.problems, 0);
@@ -48,8 +17,8 @@ export default function DSA() {
   return (
     <PageLayout>
       <PageHeader
-        title="DSA — Java"
-        subtitle={`0 / ${totalProblems} problems · All solutions in Java · Follow Striver's A2Z order`}
+        title={`DSA — ${language}`}
+        subtitle={`0 / ${totalProblems} problems · All solutions in ${language} · Follow Striver's A2Z order`}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -100,14 +69,14 @@ export default function DSA() {
               {current.status === "active" && (
                 <Button size="sm">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                  Start in Java
+                  Start in {language}
                 </Button>
               )}
             </div>
 
             <ProgressBar value={0} max={current.problems} height="h-2" />
             <div className="flex justify-between text-xs text-[var(--muted-foreground)] mt-1.5 mb-4">
-              <span>0 / {current.problems} problems solved in Java</span>
+              <span>0 / {current.problems} problems solved in {language}</span>
               <span>0%</span>
             </div>
 
@@ -126,12 +95,12 @@ export default function DSA() {
 
             {current.status === "active" && (
               <div className="mt-4 pt-4 border-t border-[var(--border)]">
-                <p className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide mb-2">Java Notes for this Topic</p>
+                <p className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide mb-2">{language} Notes for this Topic</p>
                 <div className="bg-[var(--muted)] rounded-lg p-3 text-sm text-[var(--foreground)] font-mono space-y-1">
-                  <p>// Use HashMap for O(1) lookup</p>
-                  <p>Map&lt;Integer, Integer&gt; map = new HashMap&lt;&gt;();</p>
-                  <p>// Use int[] freq = new int[26]; for char arrays</p>
-                  <p>// Arrays.sort(arr) — O(n log n)</p>
+                  <p>// Use a hash map for O(1) average lookup</p>
+                  <p>{plan.syntaxExample}</p>
+                  <p>// Track frequency before solving the pattern</p>
+                  <p>// Keep the target complexity visible while coding</p>
                 </div>
               </div>
             )}
@@ -142,7 +111,7 @@ export default function DSA() {
             <Card>
               <div className="flex items-center justify-between mb-4">
                 <p className="font-display font-semibold text-[var(--foreground)]">Problem List — Arrays & Hashing</p>
-                <span className="text-xs text-[var(--muted-foreground)]">Solve in Java · Read top solutions after each</span>
+                <span className="text-xs text-[var(--muted-foreground)]">Solve in {language} · Review your approach after each</span>
               </div>
               <div className="space-y-2">
                 {arraysProblems.map((p) => (
@@ -162,7 +131,7 @@ export default function DSA() {
 
           {/* Resources */}
           <Card>
-            <p className="font-display font-semibold text-[var(--foreground)] mb-4">Best Resources — Java DSA</p>
+            <p className="font-display font-semibold text-[var(--foreground)] mb-4">Best Resources — {language} DSA</p>
             <div className="space-y-3">
               {resources.map((r) => (
                 <div key={r.name} className="flex items-start gap-3 py-2 border-b border-[var(--border)] last:border-0">

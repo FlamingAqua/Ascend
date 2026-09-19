@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { PageHeader, Button } from "../ui";
 import { useAuth } from "../../services/AuthContext";
 import { askMentor, loadChatHistory, saveChatHistory, type ChatMessage } from "../../services/chatbotService";
+import { getPlanningContext } from "../../services/planningService";
 
 const suggestions = [
   "What should I study today?",
@@ -18,17 +19,15 @@ function now() {
   return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-const initialMessages: ChatMessage[] = [
-  {
-    role: "assistant",
-    content: `Hey ${"Learner"}! 🔥 I'm your AI Study & Career Mentor.\n\nYour goal is clear: **Java + DSA → FAANG / ₹1Cr+ by 2030.** I respect that. Let's make sure every week of the next 4 years counts.\n\nAsk me anything:\n- **What to study** (daily plans, topic order, resources)\n- **How to crack FAANG** (what interviewers actually look for)\n- **Project ideas** (what gets you hired vs. what's just busy work)\n- **Career strategy** (internships, contests, open source)\n\nWhat do you want to work on first?`,
-    time: now(),
-  },
-];
-
 export default function AIMentor() {
   const { profile, firebaseUser } = useAuth();
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+  const language = getPlanningContext(profile).preferredLanguage;
+  const welcomeMessage: ChatMessage = {
+    role: "assistant",
+    content: `Hey ${profile?.name || "Learner"}! I'm your AI Study & Career Mentor.\n\nYour current track is **${language} + DSA**. Ask me about today's plan, coding patterns, resources, projects, or interview preparation.`,
+    time: now(),
+  };
+  const [messages, setMessages] = useState<ChatMessage[]>([welcomeMessage]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -88,7 +87,7 @@ export default function AIMentor() {
   return (
     <div className="flex flex-col h-full">
       <div className="px-6 lg:px-8 pt-6 pb-4 border-b border-[var(--border)]">
-        <PageHeader title="AI Mentor" subtitle="Java + DSA · FAANG Strategy · Career Advisor" />
+        <PageHeader title="AI Mentor" subtitle={`${language} + DSA · FAANG Strategy · Career Advisor`} />
       </div>
 
       <div className="px-6 lg:px-8 py-3 border-b border-[var(--border)] bg-[var(--muted)]/30 overflow-x-auto">
@@ -149,7 +148,7 @@ export default function AIMentor() {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about Java, DSA, FAANG strategy, projects..."
+            placeholder={`Ask about ${language}, DSA, FAANG strategy, projects...`}
             className="flex-1 px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm outline-none focus:border-[var(--primary)] transition-colors placeholder:text-[var(--muted-foreground)]"
           />
           <Button onClick={() => send(input)} className={loading || !input.trim() ? "opacity-50" : ""}>

@@ -41,8 +41,8 @@ export function makeChatbotContext(profile?: UserProfile | null): ChatbotContext
     name,
     email: profile?.email,
     role,
-    goals: ["Java + DSA", "FAANG preparation", "Career growth"],
-    preferredLanguage: "Java",
+    goals: [`${profile?.preferredLanguage || "Java"} + DSA`, "FAANG preparation", "Career growth"],
+    preferredLanguage: profile?.preferredLanguage || "Java",
     dailyStudyHours: 2,
     level: "Beginner",
     target: "Placement and interview readiness",
@@ -115,11 +115,11 @@ export function generateMentorReply(question: string, profile?: UserProfile | nu
   const q = normalizeQuestion(question);
 
   if (q.includes("today") || q.includes("study today") || q.includes("plan")) {
-    return `Hi ${context.name}, here is your personalized study plan for today.\n\nFocus on Java fundamentals and one DSA pattern first. Spend ${Math.min(context.dailyStudyHours, 2)} hours in a deep work block: 45 minutes on Java OOP or collections, 45 minutes on DSA practice, and 30 minutes on revision.\n\nSuggested task: solve one medium-level Java + DSA problem and write a short explanation of the approach.\n\nStudy schedule: Morning — Java/OOP review, Midday — DSA problem, Evening — revise mistakes and update your task list.\n\nNext question: Do you want me to create a full week plan from your current roadmap?`;
+    return `Hi ${context.name}, here is your personalized study plan for today.\n\nFocus on ${context.preferredLanguage} fundamentals and one DSA pattern first. Spend ${Math.min(context.dailyStudyHours, 2)} hours in a deep work block: 45 minutes on ${context.preferredLanguage} syntax or collections, 45 minutes on DSA practice, and 30 minutes on revision.\n\nSuggested task: solve one medium-level ${context.preferredLanguage} + DSA problem and write a short explanation of the approach.\n\nStudy schedule: Morning — ${context.preferredLanguage} review, Midday — DSA problem, Evening — revise mistakes and update your task list.\n\nNext question: Do you want me to create a full week plan from your current roadmap?`;
   }
 
   if (q.includes("java") || q.includes("python") || q.includes("language")) {
-    return `For ${context.name}, Java is the right language for your DSA and placement track. Java gives strong typing, a mature collection framework, and better alignment with backend interview patterns.\n\nUse Java for your problem solving. You can learn Python later if you need scripting or AI work.\n\nSuggested task: solve one arrays or hash map problem in Java and write the complexity analysis.\n\nSchedule: 30 minutes Java collections review, 60 minutes DSA problem practice, 30 minutes notes and mistakes review.`;
+    return `For ${context.name}, ${context.preferredLanguage} is your selected language for the DSA and placement track. Keep it consistent while you build fluency with syntax, collections, and common patterns.\n\nSuggested task: solve one arrays or hash map problem in ${context.preferredLanguage} and write the complexity analysis.\n\nSchedule: 30 minutes ${context.preferredLanguage} review, 60 minutes DSA problem practice, 30 minutes notes and mistakes review.`;
   }
 
   if (q.includes("dsa") || q.includes("graph") || q.includes("tree") || q.includes("problem")) {
@@ -127,16 +127,16 @@ export function generateMentorReply(question: string, profile?: UserProfile | nu
   }
 
   if (q.includes("roadmap") || q.includes("faang") || q.includes("career") || q.includes("hire") || q.includes("placement")) {
-    return `Your roadmap should combine Java, DSA, fundamentals, project work, and interview strategy. Build a strong base in Java OOP, collections, strings, arrays, trees, graphs, SQL, and REST APIs.\n\nA realistic plan is to spend 2 hours a day on Java + DSA, keep one project moving, and revise every Sunday.\n\nSuggested task: define one project milestone this week and connect it to a job-ready backend or DSA project.\n\nSchedule: Monday to Friday practice DSA, weekend review + project work.`;
+    return `Your roadmap should combine ${context.preferredLanguage}, DSA, fundamentals, project work, and interview strategy. Build a strong base in ${context.preferredLanguage} syntax, collections, strings, arrays, trees, graphs, SQL, and REST APIs.\n\nA realistic plan is to spend 2 hours a day on ${context.preferredLanguage} + DSA, keep one project moving, and revise every Sunday.\n\nSuggested task: define one project milestone this week and connect it to a job-ready ${context.preferredLanguage} project.\n\nSchedule: Monday to Friday practice DSA, weekend review + project work.`;
   }
 
   if (q.includes("project") || q.includes("portfolio") || q.includes("github")) {
-    return `A strong project should demonstrate backend skills and Java depth. Choose one project that solves a real problem and shows API design, database structure, and clean code.\n\nSuggested task: pick a project that uses Java, CRUD operations, and a frontend or API interface. Write one GitHub README explaining the architecture.\n\nSchedule: 60 minutes on backend structure, 45 minutes on UI or API flow, 30 minutes on data modeling.`;
+    return `A strong project should demonstrate backend skills and ${context.preferredLanguage} depth. Choose one project that solves a real problem and shows API design, database structure, and clean code.\n\nSuggested task: pick a project that uses ${context.preferredLanguage}, CRUD operations, and a frontend or API interface. Write one GitHub README explaining the architecture.\n\nSchedule: 60 minutes on backend structure, 45 minutes on UI or API flow, 30 minutes on data modeling.`;
   }
 
   if (q.includes("revision") || q.includes("revise") || q.includes("memory")) {
     return `Revision should happen daily in a short loop. After every learning block, write 3 bullets: what you learned, what felt difficult, and what pattern you should remember.\n\nSuggested task: revise your last two solved problems and compare their approach.\n\nSchedule: 20 minutes recap, 20 minutes error analysis, 20 minutes re-solve one old problem.`;
   }
 
-  return `That is a good question, ${context.name}. Based on your profile, your main goal is ${context.target}, and your learning direction is ${context.preferredLanguage} + DSA.\n\nI would recommend that you focus on one concept, solve one problem, and write down the pattern. Do not jump between too many topics.\n\nSuggested task: choose your weakest current topic from ${context.weakTopics.join(", ")} and create a 60-minute practice block around it.\n\nSchedule: add one focused DSA problem, one revision item, and one Java concept review.\n\nIf you want, ask for a full study plan for today or this week.`;
+  return `That is a good question, ${context.name}. Based on your profile, your main goal is ${context.target}, and your learning direction is ${context.preferredLanguage} + DSA.\n\nI would recommend that you focus on one concept, solve one problem, and write down the pattern. Do not jump between too many topics.\n\nSuggested task: choose your weakest current topic from ${context.weakTopics.join(", ")} and create a 60-minute practice block around it.\n\nSchedule: add one focused DSA problem, one revision item, and one ${context.preferredLanguage} concept review.\n\nIf you want, ask for a full study plan for today or this week.`;
 }

@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PageLayout, PageHeader, Card, Button } from "../ui";
 import { useAuth } from "../../services/AuthContext";
 import { getStudyStartDate, setStudyStartDate } from "../../services/studyPlanService";
+import type { PreferredLanguage } from "../../types";
+import { SUPPORTED_LANGUAGES } from "../../services/planningService";
 
 export default function Settings({ dark, onToggleDark }: { dark: boolean; onToggleDark: () => void }) {
   const { profile, updateProfile } = useAuth();
@@ -10,7 +12,21 @@ export default function Settings({ dark, onToggleDark }: { dark: boolean; onTogg
   const [dailyGoal, setDailyGoal] = useState(6);
   const [weeklyDSA, setWeeklyDSA] = useState(10);
   const [name, setName] = useState(profile?.name || "Ascend Learner");
+  const [academicYear, setAcademicYear] = useState(profile?.academicYear || 1);
+  const [semester, setSemester] = useState(profile?.semester || 1);
+  const [targetYear, setTargetYear] = useState(profile?.targetYear || new Date().getFullYear() + 4);
+  const [preferredLanguage, setPreferredLanguage] = useState<PreferredLanguage>(profile?.preferredLanguage || "Java");
   const [studyStart, setStudyStart] = useState(getStudyStartDate());
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  useEffect(() => {
+    if (!profile) return;
+    setName(profile.name || "Ascend Learner");
+    setAcademicYear(profile.academicYear || 1);
+    setSemester(profile.semester || 1);
+    setTargetYear(profile.targetYear || new Date().getFullYear() + 4);
+    setPreferredLanguage(profile.preferredLanguage || "Java");
+  }, [profile]);
 
   const Toggle = ({ value, onChange }: { value: boolean; onChange: () => void }) => (
     <button onClick={onChange} className={`relative w-10 h-5 rounded-full transition-colors ${value ? "bg-[var(--primary)]" : "bg-[var(--muted)]"}`}>
@@ -31,7 +47,7 @@ export default function Settings({ dark, onToggleDark }: { dark: boolean; onTogg
               <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white text-xl font-semibold">{(name || "A").split(/\s+/).slice(0,2).map((part) => part[0]?.toUpperCase()).join("") || "A"}</div>
               <div>
                 <p className="font-semibold text-[var(--foreground)]">{name}</p>
-                <p className="text-sm text-[var(--muted-foreground)]">CSE · Year 1 · Target: FAANG 2030</p>
+                <p className="text-sm text-[var(--muted-foreground)]">Year {academicYear} · Semester {semester} · Target: {targetYear}</p>
               </div>
             </div>
             <div className="space-y-3">
@@ -46,27 +62,47 @@ export default function Settings({ dark, onToggleDark }: { dark: boolean; onTogg
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide block mb-1.5">Year</label>
-                  <select defaultValue="1" className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm outline-none focus:border-[var(--primary)]">
-                    {["1","2","3","4"].map((y) => <option key={y} value={y}>Year {y}</option>)}
+                  <select value={academicYear} onChange={(e) => setAcademicYear(Number(e.target.value))} className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm outline-none focus:border-[var(--primary)]">
+                    {[1, 2, 3, 4].map((year) => <option key={year} value={year}>Year {year}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide block mb-1.5">Semester</label>
-                  <select className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm outline-none focus:border-[var(--primary)]">
-                    <option>Semester 1</option><option>Semester 2</option>
+                  <select value={semester} onChange={(e) => setSemester(Number(e.target.value))} className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm outline-none focus:border-[var(--primary)]">
+                    <option value={1}>Semester 1</option><option value={2}>Semester 2</option>
                   </select>
                 </div>
                 <div>
                   <label className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide block mb-1.5">Target Year</label>
-                  <select className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm outline-none">
-                    <option>2030</option><option>2029</option>
+                  <select value={targetYear} onChange={(e) => setTargetYear(Number(e.target.value))} className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm outline-none">
+                    {[...Array(7)].map((_, index) => {
+                      const year = new Date().getFullYear() + index;
+                      return <option key={year} value={year}>{year}</option>;
+                    })}
                   </select>
                 </div>
               </div>
-              <Button size="sm" onClick={async () => {
-                await updateProfile({ name: name.trim() || profile?.name || "Ascend Learner" });
-                setStudyStartDate(studyStart);
-              }}>Save Profile</Button>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide block mb-1.5">DSA language</label>
+                <select value={preferredLanguage} onChange={(e) => setPreferredLanguage(e.target.value as PreferredLanguage)} className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm outline-none focus:border-[var(--primary)]">
+                  {SUPPORTED_LANGUAGES.map((language) => <option key={language} value={language}>{language}</option>)}
+                </select>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button size="sm" onClick={async () => {
+                  setSaveState("saving");
+                  try {
+                    await updateProfile({ name: name.trim() || profile?.name || "Ascend Learner", academicYear, semester, targetYear, preferredLanguage });
+                    setStudyStartDate(studyStart);
+                    setSaveState("saved");
+                  } catch (error) {
+                    console.error("Unable to save profile.", error);
+                    setSaveState("error");
+                  }
+                }}>{saveState === "saving" ? "Saving..." : "Save Profile"}</Button>
+                {saveState === "saved" && <span className="text-xs text-emerald-600">Profile saved</span>}
+                {saveState === "error" && <span className="text-xs text-red-600">Could not save profile</span>}
+              </div>
             </div>
           </Card>
 
@@ -137,8 +173,8 @@ export default function Settings({ dark, onToggleDark }: { dark: boolean; onTogg
             </div>
             <div className="space-y-2 text-sm">
               {[
-                { k: "Primary skill", v: "Java + DSA" },
-                { k: "Secondary", v: "Spring Boot, SQL, React" },
+                { k: "Primary skill", v: `${preferredLanguage} + DSA` },
+                { k: "Secondary", v: preferredLanguage === "Java" ? "Spring Boot, SQL, React" : `${preferredLanguage} tooling, SQL, React` },
                 { k: "Placement year", v: "2030" },
                 { k: "LeetCode target", v: "600+ (100 Hard)" },
               ].map((item) => (

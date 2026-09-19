@@ -15,7 +15,9 @@ import Settings from "./components/screens/Settings";
 import AuthScreen from "./components/screens/AuthScreen";
 import AdminDashboard from "./components/screens/AdminDashboard";
 import UserDetail from "./components/screens/UserDetail";
+import LanguageOnboarding from "./components/screens/LanguageOnboarding";
 import { AuthProvider, useAuth } from "./services/AuthContext";
+import { shouldShowLanguageOnboarding } from "./services/planningService";
 
 export type Screen =
   | "dashboard"
@@ -54,6 +56,10 @@ function AppContent() {
     }
 
     return <AdminDashboard onSelectUser={(uid) => { setSelectedUserUid(uid); setScreen("admin-user-detail"); }} />;
+  }
+
+  if (profile && shouldShowLanguageOnboarding(profile)) {
+    return <LanguageOnboarding />;
   }
 
   return (

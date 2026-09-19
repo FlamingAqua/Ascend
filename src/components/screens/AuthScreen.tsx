@@ -78,7 +78,7 @@ export default function AuthScreen() {
                 <div>
                   <span className="auth-stat-label">Focus path</span>
                   <span className="auth-stat-value">DSA</span>
-                  <span className="auth-stat-text">+ Java OOP</span>
+                  <span className="auth-stat-text">+ your DSA language</span>
                 </div>
               </div>
               <div className="auth-milestones">

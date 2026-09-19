@@ -46,7 +46,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const nextProfile = await getUserProfile(user.uid);
+        let nextProfile = await getUserProfile(user.uid);
+        if (!nextProfile) {
+          await ensureUserProfileFromFirebase(user.uid, user.displayName || "Ascend User", user.email || "");
+          nextProfile = await getUserProfile(user.uid);
+        }
         setProfile(nextProfile);
       } catch (error) {
         setProfile(null);
@@ -67,7 +71,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!auth) throw new Error("Firebase authentication is not configured.");
     const result = await createUserWithEmailAndPassword(auth, email, password);
     await createUserProfile(result.user.uid, { name, email });
-    await ensureUserProfileFromFirebase(result.user.uid, name, email);
     const nextProfile = await getUserProfile(result.user.uid);
     setProfile(nextProfile);
   };
@@ -88,10 +91,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
-    if (!firebaseUser || !db) return;
-    await updateUserProfile(firebaseUser.uid, updates);
-    const next = await getUserProfile(firebaseUser.uid);
-    setProfile(next);
+    if (!firebaseUser) return;
+    if (db) {
+      await updateUserProfile(firebaseUser.uid, updates);
+      const next = await getUserProfile(firebaseUser.uid);
+      setProfile(next);
+      return;
+    }
+    setProfile((current) => current ? { ...current, ...updates } : current);
   };
 
   const value = useMemo<AuthContextValue>(() => ({

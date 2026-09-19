@@ -1,5 +1,6 @@
 import React from "react";
 import { useAuth } from "../services/AuthContext";
+import { getPlanningContext } from "../services/planningService";
 import type { Screen } from "../App";
 
 const navItems: { id: Screen; label: string; icon: React.ReactElement }[] = [
@@ -173,7 +174,7 @@ export default function Sidebar({ current, onNavigate, dark, onToggleDark, open,
             </div>
             <div className="min-w-0">
               <p className="text-sm font-medium text-[var(--foreground)] truncate">{displayName}</p>
-              <p className="text-xs text-[var(--muted-foreground)] truncate">CSE · Year 1</p>
+              <p className="text-xs text-[var(--muted-foreground)] truncate">{getPlanningContext(profile).preferredLanguage} · Year {getPlanningContext(profile).academicYear}</p>
             </div>
           </div>
         </div>

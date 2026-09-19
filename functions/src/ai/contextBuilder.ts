@@ -3,6 +3,15 @@ import {getFirestore} from "firebase-admin/firestore";
 import type {AscendMentorContext, MentorProfileSnapshot, MentorStudyPlanSnapshot, MentorProgressSnapshot} from "./types";
 
 const MAX_RECENT_CONTEXT_MESSAGES = 3;
+const SUPPORTED_LANGUAGES = ["Java", "Python", "C++", "C", "JavaScript", "Go", "Rust"];
+
+function normalizePreferredLanguage(value: unknown): string {
+  if (typeof value !== "string") return "Java";
+  const aliases: Record<string, string> = {"cpp": "C++", "c++": "C++", "js": "JavaScript", "javascript": "JavaScript", "golang": "Go"};
+  const normalized = value.trim();
+  if (SUPPORTED_LANGUAGES.includes(normalized)) return normalized;
+  return aliases[normalized.toLowerCase()] || "Java";
+}
 
 export async function buildAscendMentorContext(uid: string, message: string): Promise<AscendMentorContext> {
   const db = getFirestore();
@@ -16,8 +25,8 @@ export async function buildAscendMentorContext(uid: string, message: string): Pr
     email: profileData.email || "unknown",
     role: profileData.role || "user",
     isActive: profileData.isActive,
-    goals: Array.isArray(profileData.goals) ? profileData.goals : ["Java + DSA", "FAANG preparation", "Career growth"],
-    preferredLanguage: profileData.preferredLanguage || "Java",
+    goals: Array.isArray(profileData.goals) ? profileData.goals : [`${normalizePreferredLanguage(profileData.preferredLanguage)} + DSA`, "FAANG preparation", "Career growth"],
+    preferredLanguage: normalizePreferredLanguage(profileData.preferredLanguage),
     dailyStudyHours: typeof profileData.dailyStudyHours === "number" ? profileData.dailyStudyHours : 2,
     level: profileData.level || "Beginner",
     target: profileData.target || "Placement and interview readiness",

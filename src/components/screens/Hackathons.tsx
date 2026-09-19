@@ -1,4 +1,6 @@
 import { PageLayout, PageHeader, Badge, Button } from "../ui";
+import { useAuth } from "../../services/AuthContext";
+import { generateHackathonIdea, getPlanningContext } from "../../services/planningService";
 
 const hackathons = [
   {
@@ -11,7 +13,6 @@ const hackathons = [
     statusVariant: "warning" as const,
     prize: "₹1,50,000",
     theme: "AI/ML, Web3, Sustainability",
-    idea: "Build a DSA problem recommender using LeetCode API + Java backend.",
   },
   {
     name: "DevHacks 2026",
@@ -23,7 +24,6 @@ const hackathons = [
     statusVariant: "warning" as const,
     prize: "$2,000",
     theme: "Open Innovation",
-    idea: "DSA Visualizer MVP — animates array operations and sorting in browser.",
   },
   {
     name: "Smart India Hackathon 2026",
@@ -35,7 +35,6 @@ const hackathons = [
     statusVariant: "default" as const,
     prize: "₹1,00,000",
     theme: "National Problem Statements",
-    idea: "Pick an education domain problem — build Java + SQL backend with a simple UI.",
   },
   {
     name: "HackWithInfy 2026",
@@ -47,7 +46,6 @@ const hackathons = [
     statusVariant: "default" as const,
     prize: "₹2,00,000 + PPO",
     theme: "Enterprise Tech",
-    idea: "Java Spring Boot + SQL solution to enterprise productivity or data management.",
   },
   {
     name: "Kavach Cybersecurity",
@@ -59,20 +57,19 @@ const hackathons = [
     statusVariant: "default" as const,
     prize: "₹25,00,000",
     theme: "Cybersecurity",
-    idea: "Intrusion detection system or secure data management in Java.",
   },
 ];
 
 const tips = [
   "Pick one idea in the first 2 hours and don't change it",
   "Build a working demo first — polish only if you have 4+ hours left",
-  "Java + Spring Boot + a simple React frontend is a winning stack",
   "Make your GitHub repo clean and your README excellent",
   "Tell a story in the pitch: problem → solution → demo → impact",
   "Hackathons are how you build your first real project to show recruiters",
 ];
 
 export default function Hackathons() {
+  const { profile } = useAuth();
   return (
     <PageLayout>
       <PageHeader
@@ -82,7 +79,7 @@ export default function Hackathons() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
-          {hackathons.map((h) => (
+          {hackathons.map((h, index) => (
             <div key={h.name} className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-5">
               <div className="flex items-start justify-between mb-3">
                 <div>
@@ -108,7 +105,7 @@ export default function Hackathons() {
                 <svg className="text-[var(--primary)] flex-shrink-0 mt-0.5" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
                 </svg>
-                <p className="text-xs text-[var(--foreground)]"><strong>Idea for you:</strong> {h.idea}</p>
+                <p className="text-xs text-[var(--foreground)]"><strong>Idea for you:</strong> {generateHackathonIdea(getPlanningContext(profile), index)}</p>
               </div>
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="text-xs text-[var(--muted-foreground)]">Theme: <span className="text-[var(--foreground)]">{h.theme}</span></span>

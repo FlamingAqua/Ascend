@@ -1,4 +1,5 @@
 export type UserRole = "admin" | "user";
+export type PreferredLanguage = "Java" | "Python" | "C++" | "C" | "JavaScript" | "Go" | "Rust";
 
 export interface UserProfile {
   uid: string;
@@ -6,6 +7,12 @@ export interface UserProfile {
   email: string;
   role: UserRole;
   isActive: boolean;
+  academicYear?: number;
+  semester?: number;
+  targetYear?: number;
+  dailyStudyHours?: number;
+  preferredLanguage?: PreferredLanguage;
+  onboardingCompleted?: boolean;
   createdAt?: unknown;
   updatedAt?: unknown;
 }
