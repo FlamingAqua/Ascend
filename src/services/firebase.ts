@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider, type Auth } from "firebase/auth";
+import { getFunctions, connectFunctionsEmulator, type Functions } from "firebase/functions";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
@@ -19,5 +20,10 @@ export const app = hasRequiredFirebaseConfig ? (getApps().length ? getApp() : in
 export const auth: Auth | null = app ? getAuth(app) : null;
 export const db = app ? getFirestore(app) : null;
 export const googleProvider = app ? new GoogleAuthProvider() : null;
+export const functions: Functions | null = app ? getFunctions(app, "us-central1") : null;
 
-export const firebaseReady = Boolean(app && auth && db);
+if (functions && import.meta.env.DEV && import.meta.env.VITE_USE_FIREBASE_EMULATOR === "true") {
+  connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+}
+
+export const firebaseReady = Boolean(app && auth && db && functions);

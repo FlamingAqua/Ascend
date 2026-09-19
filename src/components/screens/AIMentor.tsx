@@ -1,11 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import { PageLayout, PageHeader, Button } from "../ui";
-
-interface Message {
-  role: "user" | "assistant";
-  content: string;
-  time: string;
-}
+import { PageHeader, Button } from "../ui";
+import { useAuth } from "../../services/AuthContext";
+import { askMentor, loadChatHistory, saveChatHistory, type ChatMessage } from "../../services/chatbotService";
 
 const suggestions = [
   "What should I study today?",
@@ -18,160 +14,38 @@ const suggestions = [
   "Am I on track for ₹1Cr+ by 2030?",
 ];
 
-const canned: Record<string, string> = {
-  "What should I study today?": `Today's optimal plan for your Java + DSA grind:
-
-**Morning (2h) — Java OOP:**
-Focus: Inheritance, Polymorphism, method overriding. Write a class hierarchy — Animal → Dog/Cat — then make it work with runtime polymorphism. Don't just watch videos: code it.
-
-**Midday (2h) — DSA – Arrays:**
-Solve LeetCode #49 (Group Anagrams) and #238 (Product Except Self). Both are HashMap-based and appear constantly in interviews. Code in Java. After solving, read the top Java solution and compare.
-
-**Afternoon (1h) — Big-O:**
-Calculate time complexity for every solution you wrote today. This habit, done daily, makes you fast in interviews.
-
-**Evening (30 min) — Review:**
-Re-read your notes. Commit your Java code to GitHub. Write one sentence about what was hard.
-
-**Total: ~5.5h.** If you do this 5 days a week, you'll have 200+ LeetCode problems solved and solid Java by end of Year 1. That's the path.`,
-
-  "Java vs Python for DSA — which is better?": `**Java. No debate.**
-
-Here's why this matters for your 2030 goal:
-
-**Java advantages for DSA:**
-- Verbose but explicit — you understand exactly what's happening in memory
-- Strongly typed — fewer bugs, better IDE support (IntelliJ)
-- Collections framework is the most complete: ArrayList, HashMap, PriorityQueue, TreeMap — all built-in
-- Java is the primary language at Google, Amazon, and most Indian product companies
-- Spring Boot (Java backend framework) is the #1 backend skill hiring managers look for
-
-**Python is faster to write** — but that's the trap. Easy syntax means you don't understand what's happening. In an interview, you need to explain your code, not just type it.
-
-**The rule:** Solve every DSA problem in Java. Once you're strong in Java, picking up Python for ML or scripting takes 2 weeks — not 2 months.
-
-Stick with Java. You're already on the right track.`,
-
-  "How do I crack FAANG by 2030?": `This is achievable. Here's the honest roadmap:
-
-**Year 1 (Now) — Foundation:**
-- Java OOP mastery (Collections, Generics, Streams)
-- 150+ LeetCode (80% Easy, 20% Medium) — all in Java
-- 1–2 Java projects on GitHub (DSA Visualizer, CLI tool)
-- Git + GitHub profile — push code daily
-
-**Year 2 — Intermediate:**
-- 350+ LeetCode (mix of Medium + some Hard)
-- DSA: Graphs, DP, Backtracking
-- Spring Boot backend project (REST API + DB)
-- First internship — even a tier-2 company is fine
-- SQL advanced: window functions, indexing
-
-**Year 3 — Advanced:**
-- 500+ LeetCode (start doing Hard consistently)
-- System Design: learn to design Twitter, YouTube, Uber
-- FAANG internship attempt (Google STEP / Amazon SDE intern)
-- Contribute to open source — shows real engineering ability
-
-**Year 4 — Placement:**
-- 600+ LeetCode including company-tagged (Google, Meta, Amazon)
-- Mock interviews: Pramp, Interviewing.io — 3/week minimum
-- Strong system design portfolio — explain 3 real systems cold
-
-**The math:** If you solve 2 problems/day from Year 2 onwards, you'll have 700+ by Year 4. That's FAANG territory.
-
-One habit that separates placed students: **daily consistency over 4 years.** Not cramming in Year 4.`,
-
-  "What's the best order to learn DSA topics?": `Follow Striver's A2Z Sheet exactly. It's the most battle-tested order:
-
-**Phase 1 — Foundation (Y1 Sem 1):**
-1. Arrays & Hashing → Two Pointers → Sliding Window
-2. Binary Search (on arrays + on answers)
-3. Linked Lists (singly, doubly, fast/slow pointers)
-4. Stack & Queue (including Monotonic Stack)
-
-**Phase 2 — Trees & Recursion (Y1 Sem 2):**
-5. Recursion & Backtracking (Subsets, Permutations, N-Queens)
-6. Binary Trees + BST (traversals, LCA, diameter)
-7. Heaps / Priority Queue (Top-K, Median of Stream)
-
-**Phase 3 — Graphs & DP (Y2):**
-8. Graphs (BFS, DFS, Topological Sort, Dijkstra, Union-Find)
-9. Dynamic Programming (1D → 2D → Knapsack → DP on Trees)
-10. Tries (word problems, prefix matching)
-11. Greedy algorithms
-
-**Phase 4 — Advanced (Y3+):**
-12. Segment Trees, Fenwick Tree
-13. Math (Number Theory, Combinatorics)
-14. Competitive Programming patterns
-
-**Critical rule:** Don't jump to Graphs before Trees. Don't touch DP before Recursion. The order exists for a reason.`,
-
-  "How many problems should I solve per day?": `Here's the honest breakdown by year:
-
-**Year 1 (Now):** 1–2 problems/day
-Quality > quantity. You're still building Java fundamentals. It's okay to spend 2 hours on a single Medium problem. Read solutions, understand the pattern, rewrite from memory.
-
-**Year 2:** 2–3 problems/day
-You should be able to solve Easy in 15–20 min and Medium in 30–45 min. Start doing LeetCode Weekly Contests every Sunday.
-
-**Year 3:** 3–4 problems/day
-Mix: 1 new problem + 1 Hard + 1 revision of an old problem. Company-tagged problems (Google/Amazon/Meta).
-
-**Year 4 (Placement):** 4–5 problems/day
-Sprint mode. Daily contest participation. Mock interviews 3x/week.
-
-**The number that matters most:** not problems/day, but **problems solved consistently without hints**. 1 clean solution beats 5 copy-pasted solutions.
-
-At 1–2/day from Year 1, you'll hit 500+ by the end of Year 3. That's the threshold where FAANG interviews become winnable.`,
-};
-
-const defaultResponse = `That's exactly the right question to be asking at your stage.
-
-Here's my honest take as your mentor:
-
-You have 4 years and a clear goal — ₹1Cr+ at a top company by 2030. That's not just achievable, it's *well within reach* for someone who stays consistent.
-
-**What actually matters:**
-1. Java + DSA is the core — every other skill is additive
-2. Projects signal real-world ability — ship things, not just solve problems
-3. Internships in Year 2–3 are non-negotiable for top placements
-4. System Design separates ₹30L offers from ₹1Cr+ offers — start learning the concepts early
-
-**The trap to avoid:** spreading too thin in Year 1. Every YouTube rabbit hole about React, AI, cloud — save it. Right now, the only thing that compounds is Java + DSA daily.
-
-Want me to build a specific study plan for this week, or dig deeper into any topic?`;
-
 function now() {
   return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-const initialMessages: Message[] = [
+const initialMessages: ChatMessage[] = [
   {
     role: "assistant",
-    content: `Hey Manesh! 🔥 I'm your AI Study & Career Mentor.
-
-Your goal is clear: **Java + DSA → FAANG / ₹1Cr+ by 2030.** I respect that. Let's make sure every week of the next 4 years counts.
-
-Here's where you stand: **Day 1. Year 1. Zero problems solved.** That's actually the best position to be in — nothing to unlearn, everything to build.
-
-I have full context of your roadmap, skills, and targets. Ask me anything:
-- **What to study** (daily plans, topic order, resources)
-- **How to crack FAANG** (what interviewers actually look for)
-- **Project ideas** (what gets you hired vs. what's just busy work)
-- **Career strategy** (internships, contests, open source)
-
-What do you want to work on first?`,
+    content: `Hey ${"Learner"}! 🔥 I'm your AI Study & Career Mentor.\n\nYour goal is clear: **Java + DSA → FAANG / ₹1Cr+ by 2030.** I respect that. Let's make sure every week of the next 4 years counts.\n\nAsk me anything:\n- **What to study** (daily plans, topic order, resources)\n- **How to crack FAANG** (what interviewers actually look for)\n- **Project ideas** (what gets you hired vs. what's just busy work)\n- **Career strategy** (internships, contests, open source)\n\nWhat do you want to work on first?`,
     time: now(),
   },
 ];
 
 export default function AIMentor() {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const { profile, firebaseUser } = useAuth();
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!firebaseUser?.uid) return;
+
+    loadChatHistory(firebaseUser.uid)
+      .then((history) => {
+        if (history.length > 0) {
+          setMessages(history);
+        }
+      })
+      .catch((error) => {
+        console.error("Unable to load chat history", error);
+      });
+  }, [firebaseUser?.uid]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -179,12 +53,26 @@ export default function AIMentor() {
 
   const send = async (text: string) => {
     if (!text.trim() || loading) return;
-    setMessages((prev) => [...prev, { role: "user", content: text, time: now() }]);
+
+    const userMessage = { role: "user" as const, content: text, time: now() };
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 900 + Math.random() * 600));
-    const reply = canned[text] || defaultResponse;
-    setMessages((prev) => [...prev, { role: "assistant", content: reply, time: now() }]);
+
+    if (firebaseUser?.uid) {
+      await saveChatHistory(firebaseUser.uid, "user", text);
+    }
+
+    await new Promise((r) => setTimeout(r, 450 + Math.random() * 250));
+
+    const response = await askMentor(text, profile);
+    const assistantMessage = { role: "assistant" as const, content: response.reply, time: now() };
+    setMessages((prev) => [...prev, assistantMessage]);
+
+    if (firebaseUser?.uid) {
+      await saveChatHistory(firebaseUser.uid, "assistant", response.reply);
+    }
+
     setLoading(false);
   };
 
