@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../services/AuthContext";
 import { PageLayout, Card, Button } from "../ui";
+import BrandLogo from "../BrandLogo";
 
 export default function AuthScreen() {
   const { signIn, signUp, signInWithGoogle } = useAuth();
@@ -90,13 +91,10 @@ export default function AuthScreen() {
           </section>
 
           <section className="w-full max-w-md justify-self-center">
-            <div className="text-center mb-8">
-              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[2rem] bg-[var(--primary)] text-white shadow-2xl ring-4 ring-white/50">
-                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="18 15 12 9 6 15" />
-                </svg>
+            <div className="mb-8 w-full text-center">
+              <div className="flex w-full justify-center px-4">
+                <BrandLogo variant="wordmark" className="w-full max-w-[280px]" />
               </div>
-              <h1 className="font-display text-4xl font-semibold tracking-tight mt-4 text-[var(--foreground)]">Ascend</h1>
               <p className="text-[var(--muted-foreground)] mt-2">Learning OS</p>
             </div>
 

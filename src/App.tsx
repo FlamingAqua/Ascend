@@ -16,6 +16,7 @@ import AuthScreen from "./components/screens/AuthScreen";
 import AdminDashboard from "./components/screens/AdminDashboard";
 import UserDetail from "./components/screens/UserDetail";
 import LanguageOnboarding from "./components/screens/LanguageOnboarding";
+import BrandLogo from "./components/BrandLogo";
 import { AuthProvider, useAuth } from "./services/AuthContext";
 import { shouldShowLanguageOnboarding } from "./services/planningService";
 
@@ -88,7 +89,7 @@ function AppContent() {
                 <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
               </svg>
             </button>
-            <span className="font-display font-700 text-[var(--primary)] tracking-tight text-lg">Ascend</span>
+            <BrandLogo variant="wordmark" className="w-[132px]" />
             <div className="w-8"/>
           </div>
           <main className="flex-1 overflow-y-auto">

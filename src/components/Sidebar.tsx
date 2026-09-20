@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "../services/AuthContext";
 import { getPlanningContext } from "../services/planningService";
 import type { Screen } from "../App";
+import BrandLogo from "./BrandLogo";
 
 const navItems: { id: Screen; label: string; icon: React.ReactElement }[] = [
   {
@@ -166,15 +167,8 @@ export default function Sidebar({ current, onNavigate, dark, onToggleDark, open,
         `}
       >
         {/* Logo */}
-        <div className="flex items-center gap-2.5 px-5 h-16 border-b border-[var(--border)]">
-          <div className="w-7 h-7 rounded-lg bg-[var(--primary)] flex items-center justify-center">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-              <polyline points="18 15 12 9 6 15"/>
-            </svg>
-          </div>
-          <span className="font-display font-semibold text-[var(--foreground)] tracking-tight text-base">
-            Ascend
-          </span>
+        <div className="flex items-center px-5 h-16 border-b border-[var(--border)]">
+          <BrandLogo variant="wordmark" className="w-[132px]" />
         </div>
 
         {/* User info */}
