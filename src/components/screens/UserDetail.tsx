@@ -8,6 +8,17 @@ export default function UserDetail({ uid, onBack }: { uid: string; onBack?: () =
   const { logOut } = useAuth();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [logoutError, setLogoutError] = useState("");
+
+  async function handleLogout() {
+    setLogoutError("");
+    try {
+      await logOut();
+    } catch (error) {
+      console.error("Unable to sign out.", error);
+      setLogoutError("Sign out failed. Please try again.");
+    }
+  }
 
   useEffect(() => {
     if (!uid) return;
@@ -28,10 +39,11 @@ export default function UserDetail({ uid, onBack }: { uid: string; onBack?: () =
         action={
           <div className="flex items-center gap-2">
             <Button variant="secondary" size="sm" onClick={onBack}>Back to admin</Button>
-            <Button variant="ghost" size="sm" onClick={() => logOut()}>Log out</Button>
+            <Button variant="ghost" size="sm" onClick={handleLogout}>Log out</Button>
           </div>
         }
       />
+      {logoutError && <p role="alert" className="mb-4 text-sm text-red-600 dark:text-red-400">{logoutError}</p>}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <div className="mb-4 flex items-center justify-between">

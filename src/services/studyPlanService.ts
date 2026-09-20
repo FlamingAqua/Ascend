@@ -11,6 +11,11 @@ export function setStudyStartDate(date: string): void {
   localStorage.setItem(STUDY_START_DATE_KEY, date);
 }
 
+export function clearStudyStartDate(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(STUDY_START_DATE_KEY);
+}
+
 export function addDaysFromStudyStart(days: number): string {
   const base = getStudyStartDate();
   const d = new Date(base + "T00:00:00");

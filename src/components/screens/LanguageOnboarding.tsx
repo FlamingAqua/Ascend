@@ -16,7 +16,7 @@ const languageDescriptions: Record<PreferredLanguage, string> = {
 
 const languages = SUPPORTED_LANGUAGES.map((value) => ({ value, description: languageDescriptions[value] }));
 
-export default function LanguageOnboarding() {
+export default function LanguageOnboarding({ onComplete }: { onComplete: () => void }) {
   const { profile, updateProfile } = useAuth();
   const [selected, setSelected] = useState<PreferredLanguage>(profile?.preferredLanguage || "Java");
   const [saving, setSaving] = useState(false);
@@ -27,6 +27,7 @@ export default function LanguageOnboarding() {
     setError("");
     try {
       await updateProfile({ preferredLanguage: selected, onboardingCompleted: true });
+      onComplete();
     } catch (saveError) {
       console.error("Unable to save onboarding preferences.", saveError);
       setError("We could not save that preference. Please try again.");

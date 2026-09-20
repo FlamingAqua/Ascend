@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/screens/Dashboard";
 import Today from "./components/screens/Today";
@@ -42,6 +42,14 @@ function AppContent() {
   const [dark, setDark] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  useEffect(() => {
+    if (!authenticated) {
+      setScreen("dashboard");
+      setSelectedUserUid("");
+      setSidebarOpen(false);
+    }
+  }, [authenticated]);
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center text-[var(--foreground)]">Loading Ascend...</div>;
   }
@@ -59,7 +67,7 @@ function AppContent() {
   }
 
   if (profile && shouldShowLanguageOnboarding(profile)) {
-    return <LanguageOnboarding />;
+    return <LanguageOnboarding onComplete={() => setScreen("settings")} />;
   }
 
   return (

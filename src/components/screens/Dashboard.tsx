@@ -37,7 +37,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: Screen) => v
       />
 
       {/* Goal banner */}
-      <div className="mb-5 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-xl px-5 py-4 text-white">
+      <div className="ascend-dashboard-hero mb-5 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-xl px-5 py-4 text-white">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-medium opacity-70 uppercase tracking-wide mb-1">Mission 2030</p>
@@ -52,7 +52,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: Screen) => v
       </div>
 
       {/* Top stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="ascend-stagger grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard
           label="Study Hours Today"
           value="0h"

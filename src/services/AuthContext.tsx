@@ -3,12 +3,14 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
+  deleteUser,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   type User,
 } from "firebase/auth";
 import { auth, db, googleProvider } from "./firebase";
-import { createUserProfile, ensureUserProfileFromFirebase, getUserProfile, updateUserProfile } from "./profileService";
+import { createUserProfile, deleteUserProfile, ensureUserProfileFromFirebase, getUserProfile, updateUserProfile } from "./profileService";
+import { clearStudyStartDate } from "./studyPlanService";
 import type { UserProfile, UserRole } from "../types";
 
 interface AuthContextValue {
@@ -21,6 +23,7 @@ interface AuthContextValue {
   signUp: (name: string, email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   logOut: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
 }
 
@@ -84,8 +87,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logOut = async () => {
-    if (!auth) return;
-    await firebaseSignOut(auth);
+    if (!auth) {
+      setProfile(null);
+      setFirebaseUser(null);
+      return;
+    }
+    try {
+      await firebaseSignOut(auth);
+    } finally {
+      setProfile(null);
+      setFirebaseUser(null);
+    }
+  };
+
+  const deleteAccount = async () => {
+    if (!auth || !firebaseUser) throw new Error("Firebase authentication is not configured.");
+
+    await deleteUserProfile(firebaseUser.uid);
+    await deleteUser(firebaseUser);
+    clearStudyStartDate();
     setProfile(null);
     setFirebaseUser(null);
   };
@@ -111,6 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signUp,
     signInWithGoogle,
     logOut,
+    deleteAccount,
     updateProfile,
   }), [firebaseUser, profile, loading]);
 

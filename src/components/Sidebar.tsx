@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useAuth } from "../services/AuthContext";
 import { getPlanningContext } from "../services/planningService";
 import type { Screen } from "../App";
@@ -108,7 +108,7 @@ const navItems: { id: Screen; label: string; icon: React.ReactElement }[] = [
   },
   {
     id: "settings",
-    label: "Settings",
+    label: "Profile",
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <circle cx="12" cy="12" r="3"/>
@@ -129,12 +129,23 @@ interface SidebarProps {
 
 export default function Sidebar({ current, onNavigate, dark, onToggleDark, open, onClose }: SidebarProps) {
   const { profile, logOut } = useAuth();
+  const [logoutError, setLogoutError] = useState("");
+  const [loggingOut, setLoggingOut] = useState(false);
   const displayName = profile?.name || profile?.email || "Ascend Learner";
   const initials = displayName.split(/\s+/).filter(Boolean).slice(0,2).map((token) => token[0]?.toUpperCase() || "A").join("") || "A";
 
   async function handleLogout() {
+    setLogoutError("");
+    setLoggingOut(true);
     onClose();
-    await logOut();
+    try {
+      await logOut();
+    } catch (error) {
+      console.error("Unable to sign out.", error);
+      setLogoutError("Sign out failed. Please try again.");
+    } finally {
+      setLoggingOut(false);
+    }
   }
 
   return (
@@ -149,7 +160,7 @@ export default function Sidebar({ current, onNavigate, dark, onToggleDark, open,
       <aside
         className={`
           fixed lg:relative inset-y-0 left-0 z-40
-          flex flex-col w-56 border-r border-[var(--border)] bg-[var(--card)]
+          flex flex-col w-56 border-r border-[var(--border)] bg-[var(--card)] shadow-[4px_0_24px_rgba(15,17,23,0.04)]
           transition-transform duration-200 ease-out
           ${open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
@@ -191,7 +202,7 @@ export default function Sidebar({ current, onNavigate, dark, onToggleDark, open,
                   w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm mb-0.5
                   transition-all duration-150 text-left
                   ${active
-                    ? "bg-[var(--primary)] text-white font-medium"
+                    ? "bg-[var(--primary)] text-white font-medium shadow-[0_8px_18px_rgba(79,70,229,0.2)]"
                     : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
                   }
                 `}
@@ -228,6 +239,19 @@ export default function Sidebar({ current, onNavigate, dark, onToggleDark, open,
             )}
             {dark ? "Light mode" : "Dark mode"}
           </button>
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={loggingOut}
+            aria-label="Sign out of Ascend"
+            className="mt-2 w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--muted-foreground)] hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30 dark:hover:text-red-300 transition-colors disabled:opacity-60"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 19V5a2 2 0 00-2-2h-6"/>
+            </svg>
+            {loggingOut ? "Signing out..." : "Sign out"}
+          </button>
+          {logoutError && <p role="alert" className="mt-2 px-3 text-xs text-red-600 dark:text-red-400">{logoutError}</p>}
         </div>
       </aside>
     </>

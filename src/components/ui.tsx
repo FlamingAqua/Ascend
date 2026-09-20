@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 export function PageHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: ReactNode }) {
   return (
-    <div className="flex items-start justify-between mb-6">
+    <div className="ascend-page-header flex items-start justify-between mb-6">
       <div>
         <h1 className="font-display text-2xl font-semibold text-[var(--foreground)] tracking-tight">{title}</h1>
         {subtitle && <p className="text-sm text-[var(--muted-foreground)] mt-0.5">{subtitle}</p>}
@@ -14,7 +14,7 @@ export function PageHeader({ title, subtitle, action }: { title: string; subtitl
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 ${className}`}>
+    <div className={`ascend-card bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 ${className}`}>
       {children}
     </div>
   );
@@ -52,7 +52,7 @@ export function ProgressBar({ value, max = 100, color = "bg-[var(--primary)]", h
 }) {
   const pct = Math.min(100, (value / max) * 100);
   return (
-    <div className={`w-full bg-[var(--muted)] rounded-full ${height} overflow-hidden`}>
+    <div className={`ascend-progress w-full bg-[var(--muted)] rounded-full ${height} overflow-hidden`}>
       <div
         className={`${color} ${height} rounded-full transition-all duration-500`}
         style={{ width: `${pct}%` }}
@@ -97,12 +97,12 @@ export function Button({
     ghost: "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]",
   };
   return (
-    <button onClick={onClick} className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}>
+    <button type="button" onClick={onClick} className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}>
       {children}
     </button>
   );
 }
 
 export function PageLayout({ children }: { children: ReactNode }) {
-  return <div className="p-6 lg:p-8 max-w-6xl mx-auto">{children}</div>;
+  return <div className="ascend-page-layout p-6 lg:p-8 max-w-6xl mx-auto">{children}</div>;
 }

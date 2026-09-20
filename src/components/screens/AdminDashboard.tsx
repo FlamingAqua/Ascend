@@ -9,6 +9,17 @@ export default function AdminDashboard({ onSelectUser }: { onSelectUser?: (uid: 
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [logoutError, setLogoutError] = useState("");
+
+  async function handleLogout() {
+    setLogoutError("");
+    try {
+      await logOut();
+    } catch (error) {
+      console.error("Unable to sign out.", error);
+      setLogoutError("Sign out failed. Please try again.");
+    }
+  }
 
   useEffect(() => {
     listUsers().then((items) => {
@@ -36,7 +47,7 @@ export default function AdminDashboard({ onSelectUser }: { onSelectUser?: (uid: 
               action={
                 <div className="flex items-center gap-2">
                   <Button variant="secondary" size="sm">Export</Button>
-                  <Button variant="ghost" size="sm" onClick={() => logOut()}>Log out</Button>
+                  <Button variant="ghost" size="sm" onClick={handleLogout}>Log out</Button>
                 </div>
               }
             />
@@ -49,6 +60,7 @@ export default function AdminDashboard({ onSelectUser }: { onSelectUser?: (uid: 
           </div>
         </div>
       </section>
+      {logoutError && <p role="alert" className="mb-4 text-sm text-red-600 dark:text-red-400">{logoutError}</p>}
 
       {loading ? <div className="text-sm text-[var(--muted-foreground)]">Loading admin data...</div> : (
         <>

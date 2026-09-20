@@ -4,6 +4,7 @@ export type PreferredLanguage = "Java" | "Python" | "C++" | "C" | "JavaScript" |
 export interface UserProfile {
   uid: string;
   name: string;
+  username?: string;
   email: string;
   role: UserRole;
   isActive: boolean;
@@ -11,6 +12,7 @@ export interface UserProfile {
   semester?: number;
   targetYear?: number;
   dailyStudyHours?: number;
+  weeklyDsaProblems?: number;
   preferredLanguage?: PreferredLanguage;
   onboardingCompleted?: boolean;
   createdAt?: unknown;

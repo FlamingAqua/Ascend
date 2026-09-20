@@ -6,26 +6,32 @@ import type { PreferredLanguage } from "../../types";
 import { SUPPORTED_LANGUAGES } from "../../services/planningService";
 
 export default function Settings({ dark, onToggleDark }: { dark: boolean; onToggleDark: () => void }) {
-  const { profile, updateProfile } = useAuth();
+  const { profile, updateProfile, deleteAccount } = useAuth();
   const [notifications, setNotifications] = useState(true);
   const [revisionReminders, setRevisionReminders] = useState(true);
-  const [dailyGoal, setDailyGoal] = useState(6);
-  const [weeklyDSA, setWeeklyDSA] = useState(10);
+  const [dailyGoal, setDailyGoal] = useState(profile?.dailyStudyHours || 6);
+  const [weeklyDSA, setWeeklyDSA] = useState(profile?.weeklyDsaProblems || 10);
   const [name, setName] = useState(profile?.name || "Ascend Learner");
+  const [username, setUsername] = useState(profile?.username || "");
   const [academicYear, setAcademicYear] = useState(profile?.academicYear || 1);
   const [semester, setSemester] = useState(profile?.semester || 1);
   const [targetYear, setTargetYear] = useState(profile?.targetYear || new Date().getFullYear() + 4);
   const [preferredLanguage, setPreferredLanguage] = useState<PreferredLanguage>(profile?.preferredLanguage || "Java");
   const [studyStart, setStudyStart] = useState(getStudyStartDate());
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [deleteState, setDeleteState] = useState<"idle" | "deleting" | "error">("idle");
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     if (!profile) return;
     setName(profile.name || "Ascend Learner");
+    setUsername(profile.username || "");
     setAcademicYear(profile.academicYear || 1);
     setSemester(profile.semester || 1);
     setTargetYear(profile.targetYear || new Date().getFullYear() + 4);
     setPreferredLanguage(profile.preferredLanguage || "Java");
+    setDailyGoal(profile.dailyStudyHours || 6);
+    setWeeklyDSA(profile.weeklyDsaProblems || 10);
   }, [profile]);
 
   const Toggle = ({ value, onChange }: { value: boolean; onChange: () => void }) => (
@@ -36,7 +42,7 @@ export default function Settings({ dark, onToggleDark }: { dark: boolean; onTogg
 
   return (
     <PageLayout>
-      <PageHeader title="Settings" subtitle="Configure your Ascend workspace" />
+      <PageHeader title="Profile" subtitle="Set up your learning profile and study goals" />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-5">
@@ -54,6 +60,10 @@ export default function Settings({ dark, onToggleDark }: { dark: boolean; onTogg
               <div>
                 <label className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide block mb-1.5">Name</label>
                 <input value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm outline-none focus:border-[var(--primary)] transition-colors" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide block mb-1.5">Username</label>
+                <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Choose a username" className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] text-sm outline-none focus:border-[var(--primary)] transition-colors" />
               </div>
               <div>
                 <label className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide block mb-1.5">Study start date</label>
@@ -92,7 +102,7 @@ export default function Settings({ dark, onToggleDark }: { dark: boolean; onTogg
                 <Button size="sm" onClick={async () => {
                   setSaveState("saving");
                   try {
-                    await updateProfile({ name: name.trim() || profile?.name || "Ascend Learner", academicYear, semester, targetYear, preferredLanguage });
+                    await updateProfile({ name: name.trim() || profile?.name || "Ascend Learner", username: username.trim(), academicYear, semester, targetYear, preferredLanguage, dailyStudyHours: dailyGoal, weeklyDsaProblems: weeklyDSA });
                     setStudyStartDate(studyStart);
                     setSaveState("saved");
                   } catch (error) {
@@ -201,6 +211,30 @@ export default function Settings({ dark, onToggleDark }: { dark: boolean; onTogg
                 </div>
               ))}
             </div>
+          </Card>
+        </div>
+
+        <div className="lg:col-span-3">
+          <Card>
+            <p className="font-display font-semibold text-red-700 dark:text-red-400 mb-1">Delete account</p>
+            <p className="text-sm text-[var(--muted-foreground)] mb-4">Permanently delete your Ascend profile and sign-in account. This action cannot be undone.</p>
+            <Button variant="secondary" onClick={async () => {
+              if (!window.confirm("Delete your Ascend account permanently? This cannot be undone.")) return;
+              setDeleteError("");
+              setDeleteState("deleting");
+              try {
+                await deleteAccount();
+              } catch (error) {
+                console.error("Unable to delete account.", error);
+                setDeleteError(error instanceof Error && error.message.includes("requires-recent-login")
+                  ? "For security, please sign out and sign in again before deleting your account."
+                  : "Could not delete your account. Please try again.");
+                setDeleteState("error");
+              }
+            }} className="text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30">
+              {deleteState === "deleting" ? "Deleting..." : "Delete account"}
+            </Button>
+            {deleteError && <p className="text-sm text-red-600 mt-3">{deleteError}</p>}
           </Card>
         </div>
       </div>
